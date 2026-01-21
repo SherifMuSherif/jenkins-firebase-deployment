@@ -22,8 +22,16 @@ pipeline {
             }
         }
         stage('Deploy to Testing') {
+            agent {
+                docker {
+                    image 'node:18'
+                }
+            }
             steps {
-                sh 'firebase deploy -P testing --token $FIREBASE_TOKEN'
+                sh '''
+      npm install -g firebase-tools
+      firebase deploy -P testing --token "$FIREBASE_TOKEN"
+    '''
             }
         }
         stage('Approve Staging') {
