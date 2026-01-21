@@ -1,5 +1,7 @@
 pipeline {
-  agent any environment {
+  agent any 
+  
+  environment {
     FIREBASE_TOKEN = credentials('firebase-token')
   }
   stages {
