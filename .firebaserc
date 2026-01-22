@@ -1,7 +1,7 @@
 {
   "projects": {
     "testing": "trails-testing",
-    "staging": "trails-staging",
-    "production": "trails-production"
+    "staging": "trails-staging-e0197",
+    "production": "trails-production-aca3a"
   }
 }
