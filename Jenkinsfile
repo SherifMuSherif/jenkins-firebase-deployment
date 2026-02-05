@@ -3,11 +3,59 @@ pipeline {
 
     environment {
         FIREBASE_TOKEN = credentials('firebase-token')
+        TF_VAR_docker_host = 'unix:///var/run/docker.sock'
     }
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'main', credentialsId: 'github-token', url: 'https://github.com/SherifMuSherif/jenkins-firebase-deployment.git'
+            }
+        }
+        stage('Terraform Init') {
+            agent {
+                docker {
+                    image 'hashicorp/terraform:latest'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
+            steps {
+                sh '''
+                    cd terraform-phase1
+                    terraform init
+                '''
+            }
+        }
+        stage('Terraform Plan') {
+            agent {
+                docker {
+                    image 'hashicorp/terraform:latest'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
+            steps {
+                sh '''
+                    cd terraform-phase1
+                    terraform plan -out=tfplan
+                '''
+            }
+        }
+        stage('Approve Terraform') {
+            steps {
+                input message: 'Apply Terraform changes?', ok: 'Deploy Infrastructure'
+            }
+        }
+        stage('Terraform Apply') {
+            agent {
+                docker {
+                    image 'hashicorp/terraform:latest'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
+            steps {
+                sh '''
+                    cd terraform-phase1
+                    terraform apply -auto-approve tfplan
+                '''
             }
         }
         stage('Build & Verify') {
